@@ -4,7 +4,12 @@
   "description": "a todo api",
   "main": "app.js",
   "scripts": {
+    "lint": "eslint .",
     "start": "node app.js"
+  },
+  "devDependencies": {
+    "eslint": "^9.21.0",
+    "globals": "^15.15.0"
   },
   "dependencies": {
     "express": "^4.17.1",
