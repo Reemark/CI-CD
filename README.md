@@ -31,6 +31,16 @@ GitHub Actions runs automatically on push and pull requests:
 - vulnerability scanning with Trivy (HIGH/CRITICAL)
 - code quality analysis with SonarCloud
 
+## deployment
+
+- `GET /health` returns HTTP `200` with `{ "status": "ok" }`
+- deployment workflow: `.github/workflows/deploy.yml`
+- automatic deployment is triggered on every push to `main`
+
+Set these GitHub repository secrets to enable deployment:
+- `DEPLOY_HOOK_URL`: deploy webhook URL from your platform (Render/Railway/etc.)
+- `APP_HEALTHCHECK_URL`: public URL to check health (example: `https://your-app.example.com/health`)
+
 ## sonarcloud setup
 
 Add these in GitHub repository settings:

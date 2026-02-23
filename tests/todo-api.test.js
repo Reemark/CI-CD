@@ -37,6 +37,13 @@ describe("Todo API", () => {
     });
   });
 
+  test("GET /health returns 200", async () => {
+    const response = await request(app).get("/health");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ status: "ok" });
+  });
+
   test("POST /todos returns 422 if title is missing", async () => {
     const response = await request(app).post("/todos").send({ description: "x" });
 

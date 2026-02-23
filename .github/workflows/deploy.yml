@@ -1,0 +1,49 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+      APP_HEALTHCHECK_URL: ${{ secrets.APP_HEALTHCHECK_URL }}
+
+    steps:
+      - name: Fail if deployment secrets are missing
+        run: |
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "Missing DEPLOY_HOOK_URL secret"
+            exit 1
+          fi
+          if [ -z "$APP_HEALTHCHECK_URL" ]; then
+            echo "Missing APP_HEALTHCHECK_URL secret"
+            exit 1
+          fi
+
+      - name: Trigger deployment
+        run: |
+          curl --fail --silent --show-error --location \
+            --request POST \
+            "$DEPLOY_HOOK_URL"
+
+      - name: Wait for /health endpoint to return 200
+        run: |
+          for i in {1..20}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$APP_HEALTHCHECK_URL" || true)
+            if [ "$code" = "200" ]; then
+              echo "Health check OK"
+              exit 0
+            fi
+            echo "Attempt $i/20 - health status: $code"
+            sleep 15
+          done
+          echo "Health check failed"
+          exit 1

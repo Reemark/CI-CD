@@ -9,6 +9,10 @@ app.get("/", (_req, res) => {
   res.json({ message: "Welcome to the Enhanced Express Todo App!" });
 });
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/todos", todoRouter);
 
 if (require.main === module) {
