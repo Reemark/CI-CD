@@ -2,16 +2,22 @@ const initSqlJs = require("sql.js");
 const fs = require("fs");
 const path = require("path");
 
-const DB_PATH = path.join(__dirname, "..", "todo.db");
+const DEFAULT_DB_PATH = path.join(__dirname, "..", "todo.db");
 
 let db;
+
+function getDbPath() {
+  return process.env.TODO_DB_PATH || DEFAULT_DB_PATH;
+}
 
 async function getDb() {
   if (db) return db;
   console.log("initializing database connection");
   const SQL = await initSqlJs();
-  if (fs.existsSync(DB_PATH)) {
-    const buffer = fs.readFileSync(DB_PATH);
+  const dbPath = getDbPath();
+
+  if (fs.existsSync(dbPath)) {
+    const buffer = fs.readFileSync(dbPath);
     db = new SQL.Database(buffer);
   } else {
     db = new SQL.Database();
@@ -30,9 +36,17 @@ async function getDb() {
 function saveDb() {
   if (db) {
     console.log("saving database to disk");
+    const dbPath = getDbPath();
     const data = db.export();
-    fs.writeFileSync(DB_PATH, Buffer.from(data));
+    fs.writeFileSync(dbPath, Buffer.from(data));
   }
 }
 
-module.exports = { getDb, saveDb };
+function resetDb() {
+  if (db && typeof db.close === "function") {
+    db.close();
+  }
+  db = undefined;
+}
+
+module.exports = { getDb, saveDb, resetDb };
