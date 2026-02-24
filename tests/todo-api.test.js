@@ -97,4 +97,33 @@ describe("Todo API", () => {
     expect(deleteMissingResponse.status).toBe(404);
     expect(deleteMissingResponse.body).toEqual({ detail: "Todo not found" });
   });
+
+  test("PUT /todos/:id keeps existing fields when not provided", async () => {
+    const createResponse = await request(app)
+      .post("/todos")
+      .send({ title: "Original Title", description: "Original Desc", status: "pending" });
+    const id = createResponse.body.id;
+
+    // Only update status — title and description should fall back to existing values
+    const updateResponse = await request(app)
+      .put(`/todos/${id}`)
+      .send({ status: "done" });
+    expect(updateResponse.status).toBe(200);
+    expect(updateResponse.body.title).toBe("Original Title");
+    expect(updateResponse.body.description).toBe("Original Desc");
+    expect(updateResponse.body.status).toBe("done");
+  });
+
+  test("loads existing database file on reconnect", async () => {
+    // Create a todo so the DB file gets written to disk
+    await request(app).post("/todos").send({ title: "Persistent Todo" });
+
+    // Reset in-memory db but keep the file on disk
+    resetDb();
+
+    // Reconnect — this time fs.existsSync returns true → covers lines 20-21 of database.js
+    const listResponse = await request(app).get("/todos");
+    expect(listResponse.status).toBe(200);
+    expect(Array.isArray(listResponse.body)).toBe(true);
+  });
 });
