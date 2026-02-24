@@ -1,6 +1,6 @@
-version: 2 # Version du format de configuration Dependabot (toujours 2)
+﻿version: 2
 updates:
-  - package-ecosystem: "npm" # Surveille express, sql.js, lodash, moment (dependences) ET eslint, jest, supertest (devDependencies) dans le package.json. Si une nouvelle version sort, Dependabot ouvre automatiquement une Pull Request sur GitHub pour mettre à jour
-    directory: "/CI-CD" # Dossier où se trouve le package.json
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: "weekly" # Vérifie une fois par semaine
+      interval: "weekly"
