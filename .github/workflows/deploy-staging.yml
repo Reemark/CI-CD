@@ -13,6 +13,7 @@ permissions:
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest
+    environment: staging
     env:
       DEPLOY_HOOK_URL: ${{ secrets.STAGING_DEPLOY_HOOK_URL }}
       APP_HEALTHCHECK_URL: ${{ secrets.STAGING_HEALTHCHECK_URL }}
