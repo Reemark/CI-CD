@@ -1,0 +1,3 @@
+# Temporary exception to keep CI stable: forcing minimatch@10 breaks Jest coverage toolchain
+# (test-exclude/glob expect minimatch v3 API).
+CVE-2026-26996
