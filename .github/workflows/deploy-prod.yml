@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy Prod
 
 on:
   push:
@@ -10,40 +10,40 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-prod:
     runs-on: ubuntu-latest
     env:
-      DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
-      APP_HEALTHCHECK_URL: ${{ secrets.APP_HEALTHCHECK_URL }}
+      DEPLOY_HOOK_URL: ${{ secrets.PROD_DEPLOY_HOOK_URL }}
+      APP_HEALTHCHECK_URL: ${{ secrets.PROD_HEALTHCHECK_URL }}
 
     steps:
-      - name: Fail if deployment secrets are missing
+      - name: Fail if prod secrets are missing
         run: |
           if [ -z "$DEPLOY_HOOK_URL" ]; then
-            echo "Missing DEPLOY_HOOK_URL secret"
+            echo "Missing PROD_DEPLOY_HOOK_URL secret"
             exit 1
           fi
           if [ -z "$APP_HEALTHCHECK_URL" ]; then
-            echo "Missing APP_HEALTHCHECK_URL secret"
+            echo "Missing PROD_HEALTHCHECK_URL secret"
             exit 1
           fi
 
-      - name: Trigger deployment
+      - name: Trigger prod deployment
         run: |
           curl --fail --silent --show-error --location \
             --request POST \
             "$DEPLOY_HOOK_URL"
 
-      - name: Wait for /health endpoint to return 200
+      - name: Wait for prod /health endpoint to return 200
         run: |
           for i in {1..20}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "$APP_HEALTHCHECK_URL" || true)
             if [ "$code" = "200" ]; then
-              echo "Health check OK"
+              echo "Prod health check OK"
               exit 0
             fi
-            echo "Attempt $i/20 - health status: $code"
+            echo "Attempt $i/20 - prod health status: $code"
             sleep 15
           done
-          echo "Health check failed"
+          echo "Prod health check failed"
           exit 1
