@@ -96,39 +96,3 @@ jobs:
           done
           echo "Prod health check failed"
           exit 1
-
-    env:
-      DEPLOY_HOOK_URL: ${{ secrets.PROD_DEPLOY_HOOK_URL }}
-      APP_HEALTHCHECK_URL: ${{ secrets.PROD_HEALTHCHECK_URL }}
-
-    steps:
-      - name: Fail if prod secrets are missing
-        run: |
-          if [ -z "$DEPLOY_HOOK_URL" ]; then
-            echo "Missing PROD_DEPLOY_HOOK_URL secret"
-            exit 1
-          fi
-          if [ -z "$APP_HEALTHCHECK_URL" ]; then
-            echo "Missing PROD_HEALTHCHECK_URL secret"
-            exit 1
-          fi
-
-      - name: Trigger prod deployment
-        run: |
-          curl --fail --silent --show-error --location \
-            --request POST \
-            "$DEPLOY_HOOK_URL"
-
-      - name: Wait for prod /health endpoint to return 200
-        run: |
-          for i in {1..20}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$APP_HEALTHCHECK_URL" || true)
-            if [ "$code" = "200" ]; then
-              echo "Prod health check OK"
-              exit 0
-            fi
-            echo "Attempt $i/20 - prod health status: $code"
-            sleep 15
-          done
-          echo "Prod health check failed"
-          exit 1
