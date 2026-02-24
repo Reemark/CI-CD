@@ -28,11 +28,19 @@ jobs:
             exit 1
           fi
 
-      - name: Trigger staging deployment
+      - name: Trigger staging deployment (with retries)
         run: |
-          curl --fail --silent --show-error --location \
-            --request POST \
-            "$DEPLOY_HOOK_URL"
+          for i in {1..5}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --location --request POST "$DEPLOY_HOOK_URL" || true)
+            if [ "$code" = "200" ] || [ "$code" = "201" ] || [ "$code" = "202" ] || [ "$code" = "204" ]; then
+              echo "Staging deploy hook accepted (HTTP $code)"
+              exit 0
+            fi
+            echo "Attempt $i/5 - deploy hook returned HTTP $code"
+            sleep 10
+          done
+          echo "Staging deploy hook failed after retries"
+          exit 1
 
       - name: Wait for staging /health endpoint to return 200
         run: |
