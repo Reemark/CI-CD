@@ -32,7 +32,7 @@ jobs:
       - name: Run lint
         run: npx eslint .
 
-  test:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -52,7 +52,7 @@ jobs:
         run: npm test
 
   coverage:
-    needs: test
+    needs: tests
     runs-on: ubuntu-latest
 
     steps:
@@ -157,7 +157,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    needs: [lint, test, coverage]
+    needs: [lint, tests, coverage]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
