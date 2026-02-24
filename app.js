@@ -1,8 +1,26 @@
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
 const todoRouter = require("./routes/todo");
 
 const app = express();
 app.use(express.json());
+
+// Configuration Swagger
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Todo API",
+      version: "1.0.0",
+      description: "API de gestion de todos",
+    },
+  },
+  apis: ["./routes/*.js"], // Swagger va lire les commentaires dans les fichiers de routes
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/", (_req, res) => {
   console.log("someone hit the root endpoint");
