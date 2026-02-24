@@ -42,6 +42,8 @@
   },
   "overrides": {
     "validator": ">=13.15.22",
-    "minimatch": ">=10.2.1"
+    "swagger-jsdoc": {
+      "minimatch": ">=10.2.1"
+    }
   }
 }
