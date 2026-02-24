@@ -149,4 +149,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/ci-cd:latest
+          tags: ghcr.io/reemark/ci-cd:latest
