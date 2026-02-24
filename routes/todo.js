@@ -1,7 +1,29 @@
 const { Router } = require("express");
+const { z } = require("zod");
 const { getDb, saveDb } = require("../database/database");
 
 const router = Router();
+
+const createTodoSchema = z.object({
+  title: z.string().trim().min(1, "title is required"),
+  description: z.string().nullable().optional(),
+  status: z.enum(["pending", "done"]).optional(),
+});
+
+const updateTodoSchema = z.object({
+  title: z.string().trim().min(1).optional(),
+  description: z.string().nullable().optional(),
+  status: z.enum(["pending", "done"]).optional(),
+});
+
+function getValidationErrorDetail(result) {
+  const firstIssue = result.error.issues[0];
+  if (!firstIssue) return "invalid request body";
+  if (firstIssue.path[0] === "title" && firstIssue.code === "invalid_type") {
+    return "title is required";
+  }
+  return firstIssue.message || "invalid request body";
+}
 
 /**
  * @swagger
@@ -47,10 +69,10 @@ const router = Router();
  *         description: Title manquant
  */
 router.post("/", async (req, res) => {
-  const { title, description = null, status = "pending" } = req.body;
-  if (!title) {
-    return res.status(422).json({ detail: "title is required" });
-  }
+  const result = createTodoSchema.safeParse(req.body);
+  if (!result.success) return res.status(422).json({ detail: getValidationErrorDetail(result) });
+
+  const { title, description = null, status = "pending" } = result.data;
   console.log("creating todo: " + title);
   const db = await getDb();
   db.run("INSERT INTO todos (title, description, status) VALUES (?, ?, ?)", [title, description, status]);
@@ -171,10 +193,13 @@ router.put("/:id", async (req, res) => {
   const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
   if (!existing.length || !existing[0].values.length) return res.status(404).json({ detail: "Todo not found" });
 
+  const result = updateTodoSchema.safeParse(req.body);
+  if (!result.success) return res.status(422).json({ detail: getValidationErrorDetail(result) });
+
   const old = toObj(existing);
-  const title = req.body.title ?? old.title;
-  const description = req.body.description ?? old.description;
-  const status = req.body.status ?? old.status;
+  const title = result.data.title ?? old.title;
+  const description = result.data.description ?? old.description;
+  const status = result.data.status ?? old.status;
 
   db.run("UPDATE todos SET title = ?, description = ?, status = ? WHERE id = ?", [title, description, status, req.params.id]);
   const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
