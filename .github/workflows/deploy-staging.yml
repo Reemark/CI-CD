@@ -1,0 +1,49 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - dev-1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOOK_URL: ${{ secrets.STAGING_DEPLOY_HOOK_URL }}
+      APP_HEALTHCHECK_URL: ${{ secrets.STAGING_HEALTHCHECK_URL }}
+
+    steps:
+      - name: Fail if staging secrets are missing
+        run: |
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "Missing STAGING_DEPLOY_HOOK_URL secret"
+            exit 1
+          fi
+          if [ -z "$APP_HEALTHCHECK_URL" ]; then
+            echo "Missing STAGING_HEALTHCHECK_URL secret"
+            exit 1
+          fi
+
+      - name: Trigger staging deployment
+        run: |
+          curl --fail --silent --show-error --location \
+            --request POST \
+            "$DEPLOY_HOOK_URL"
+
+      - name: Wait for staging /health endpoint to return 200
+        run: |
+          for i in {1..20}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$APP_HEALTHCHECK_URL" || true)
+            if [ "$code" = "200" ]; then
+              echo "Staging health check OK"
+              exit 0
+            fi
+            echo "Attempt $i/20 - staging health status: $code"
+            sleep 15
+          done
+          echo "Staging health check failed"
+          exit 1
