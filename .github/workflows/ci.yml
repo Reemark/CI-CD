@@ -196,7 +196,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -204,5 +204,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ steps.image_meta.outputs.owner_lc }}/ci-cd:latest
-            ghcr.io/${{ steps.image_meta.outputs.owner_lc }}/ci-cd:${{ github.sha }}
+            ghcr.io/${{ steps.image_meta.outputs.owner_lc }}/todo-api-node:latest
+            ghcr.io/${{ steps.image_meta.outputs.owner_lc }}/todo-api-node:${{ github.sha }}
