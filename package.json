@@ -16,6 +16,7 @@
       "!eslint.config.cjs",
       "!**/node_modules/**",
       "!**/coverage/**",
+      "!**/scripts/**",
       "!**/tests/**"
     ],
     "coverageThreshold": {
