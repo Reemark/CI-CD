@@ -3,7 +3,49 @@ const { getDb, saveDb } = require("../database/database");
 
 const router = Router();
 
-// POST /todos
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Todo:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         status:
+ *           type: string
+ */
+
+/**
+ * @swagger
+ * /todos:
+ *   post:
+ *     summary: Créer un todo
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Todo créé
+ *       422:
+ *         description: Title manquant
+ */
 router.post("/", async (req, res) => {
   const { title, description = null, status = "pending" } = req.body;
   if (!title) {
@@ -19,7 +61,26 @@ router.post("/", async (req, res) => {
   res.status(201).json(todo);
 });
 
-// GET /todos
+/**
+ * @swagger
+ * /todos:
+ *   get:
+ *     summary: Récupérer tous les todos
+ *     parameters:
+ *       - in: query
+ *         name: skip
+ *         schema:
+ *           type: integer
+ *         description: Nombre de todos à ignorer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Nombre max de todos à retourner
+ *     responses:
+ *       200:
+ *         description: Liste des todos
+ */
 router.get("/", async (req, res) => {
   const skip = parseInt(req.query.skip) || 0;
   const limit = parseInt(req.query.limit) || 10;
@@ -30,7 +91,21 @@ router.get("/", async (req, res) => {
   res.json(todos);
 });
 
-// GET /todos/search/all
+/**
+ * @swagger
+ * /todos/search/all:
+ *   get:
+ *     summary: Rechercher des todos par titre
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Mot clé à rechercher dans le titre
+ *     responses:
+ *       200:
+ *         description: Liste des todos correspondants
+ */
 router.get("/search/all", async (req, res) => {
   const q = String(req.query.q || "");
   const db = await getDb();
@@ -38,7 +113,23 @@ router.get("/search/all", async (req, res) => {
   res.json(toArray(results));
 });
 
-// GET /todos/:id
+/**
+ * @swagger
+ * /todos/{id}:
+ *   get:
+ *     summary: Récupérer un todo par id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Le todo trouvé
+ *       404:
+ *         description: Todo non trouvé
+ */
 router.get("/:id", async (req, res) => {
   const db = await getDb();
   const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
@@ -46,7 +137,35 @@ router.get("/:id", async (req, res) => {
   res.json(toObj(rows));
 });
 
-// PUT /todos/:id
+/**
+ * @swagger
+ * /todos/{id}:
+ *   put:
+ *     summary: Modifier un todo
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Todo modifié
+ *       404:
+ *         description: Todo non trouvé
+ */
 router.put("/:id", async (req, res) => {
   const db = await getDb();
   const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
@@ -63,7 +182,23 @@ router.put("/:id", async (req, res) => {
   res.json(toObj(rows));
 });
 
-// DELETE /todos/:id
+/**
+ * @swagger
+ * /todos/{id}:
+ *   delete:
+ *     summary: Supprimer un todo
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Todo supprimé
+ *       404:
+ *         description: Todo non trouvé
+ */
 router.delete("/:id", async (req, res) => {
   const db = await getDb();
   const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
