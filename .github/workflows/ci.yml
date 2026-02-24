@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   lint:
@@ -59,8 +60,8 @@ jobs:
 
       - name: Scan repository for secrets
         uses: gitleaks/gitleaks-action@v2
-        with:
-          args: detect --source . --no-git --verbose
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   trivy-scan:
     runs-on: ubuntu-latest
