@@ -1,5 +1,8 @@
 # Todo API
 
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Reemark_CI-CD&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Reemark_CI-CD)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Reemark_CI-CD&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Reemark_CI-CD)
+
 a todo api
 
 ## how to run
@@ -25,6 +28,7 @@ npm run test:coverage
 ## ci
 
 GitHub Actions runs automatically on push and pull requests:
+
 - `lint` with ESLint
 - tests with coverage threshold (>= 70%)
 - secret scanning with Gitleaks
@@ -38,12 +42,14 @@ GitHub Actions runs automatically on push and pull requests:
 - automatic deployment is triggered on every push to `main`
 
 Set these GitHub repository secrets to enable deployment:
+
 - `DEPLOY_HOOK_URL`: deploy webhook URL from your platform (Render/Railway/etc.)
 - `APP_HEALTHCHECK_URL`: public URL to check health (example: `https://your-app.example.com/health`)
 
 ## sonarcloud setup
 
 Add these in GitHub repository settings:
+
 - Secret: `SONAR_TOKEN`
 - Variable: `SONAR_ORGANIZATION`
 - Variable: `SONAR_PROJECT_KEY`
