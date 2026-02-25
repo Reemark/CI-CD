@@ -178,7 +178,6 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     needs: [lint, tests, coverage]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -192,13 +191,23 @@ jobs:
         run: echo "owner_lc=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GitHub Container Registry
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build Docker image (pull_request)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ghcr.io/${{ steps.image_meta.outputs.owner_lc }}/todo-api-node:pr-${{ github.event.pull_request.number }}
+
+      - name: Build and push Docker image (main)
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v5
         with:
           context: .
