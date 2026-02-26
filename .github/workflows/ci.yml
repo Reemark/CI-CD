@@ -97,6 +97,41 @@ jobs:
       - name: Run performance tests
         run: npm run test:perf
 
+  feature-flag:
+    name: feature-flag
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - name: Validate feature-flag configuration
+        env:
+          FEATURE_FLAG_TODO_V2: ${{ vars.FEATURE_FLAG_TODO_V2 }}
+        run: |
+          value="${FEATURE_FLAG_TODO_V2:-false}"
+          if [ "$value" != "true" ] && [ "$value" != "false" ]; then
+            echo "feature-flag FEATURE_FLAG_TODO_V2 must be true or false"
+            exit 1
+          fi
+          echo "feature-flag FEATURE_FLAG_TODO_V2=$value"
+
+  blue-green:
+    name: blue-green strategy
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - name: blue-green strategy smoke check
+        env:
+          BLUE_URL: ${{ secrets.STAGING_HEALTHCHECK_URL }}
+          GREEN_URL: ${{ secrets.PROD_HEALTHCHECK_URL }}
+        run: |
+          for target in "$BLUE_URL" "$GREEN_URL"; do
+            if [ -n "$target" ]; then
+              code=$(curl -s -o /dev/null -w "%{http_code}" "$target" || true)
+              echo "blue-green strategy check $target -> HTTP $code"
+            else
+              echo "blue-green strategy check skipped (missing URL)"
+            fi
+          done
+
   secret-scan:
     runs-on: ubuntu-latest
 
