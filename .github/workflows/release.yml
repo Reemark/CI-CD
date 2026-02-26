@@ -54,7 +54,7 @@ jobs:
           context: .
           push: false
 
-  perf:
+  performance:
     runs-on: ubuntu-latest
     needs: tests
     steps:
@@ -72,7 +72,7 @@ jobs:
 
   release-please:
     runs-on: ubuntu-latest
-    needs: [lint, tests, docker-build, perf]
+    needs: [lint, tests, docker-build, performance]
     steps:
       - uses: googleapis/release-please-action@v4
         with:

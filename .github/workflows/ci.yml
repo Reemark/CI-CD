@@ -100,7 +100,7 @@ jobs:
           name: coverage-report
           path: coverage/
 
-  perf:
+  performance:
     needs: tests
     runs-on: ubuntu-latest
 
@@ -278,11 +278,11 @@ jobs:
     name: CI notifications (Discord/Slack)
     runs-on: ubuntu-latest
     if: always()
-    needs: [lint, tests, coverage, perf, secret-scan, trivy-scan, sonarcloud, api-contract, docker]
+    needs: [lint, tests, coverage, performance, secret-scan, trivy-scan, sonarcloud, api-contract, docker]
 
     steps:
       - name: Notify Discord on CI failure
-        if: ${{ always() && (needs.lint.result == 'failure' || needs.tests.result == 'failure' || needs.coverage.result == 'failure' || needs.perf.result == 'failure' || needs['secret-scan'].result == 'failure' || needs['trivy-scan'].result == 'failure' || needs.sonarcloud.result == 'failure' || needs['api-contract'].result == 'failure' || needs.docker.result == 'failure') }}
+        if: ${{ always() && (needs.lint.result == 'failure' || needs.tests.result == 'failure' || needs.coverage.result == 'failure' || needs.performance.result == 'failure' || needs['secret-scan'].result == 'failure' || needs['trivy-scan'].result == 'failure' || needs.sonarcloud.result == 'failure' || needs['api-contract'].result == 'failure' || needs.docker.result == 'failure') }}
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
@@ -294,7 +294,7 @@ jobs:
           curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK_URL"
 
       - name: Notify Slack on CI failure
-        if: ${{ always() && (needs.lint.result == 'failure' || needs.tests.result == 'failure' || needs.coverage.result == 'failure' || needs.perf.result == 'failure' || needs['secret-scan'].result == 'failure' || needs['trivy-scan'].result == 'failure' || needs.sonarcloud.result == 'failure' || needs['api-contract'].result == 'failure' || needs.docker.result == 'failure') }}
+        if: ${{ always() && (needs.lint.result == 'failure' || needs.tests.result == 'failure' || needs.coverage.result == 'failure' || needs.performance.result == 'failure' || needs['secret-scan'].result == 'failure' || needs['trivy-scan'].result == 'failure' || needs.sonarcloud.result == 'failure' || needs['api-contract'].result == 'failure' || needs.docker.result == 'failure') }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
