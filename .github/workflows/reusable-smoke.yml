@@ -1,0 +1,33 @@
+name: Reusable Smoke Test
+
+on:
+  workflow_call:
+    secrets:
+      healthcheck_url:
+        description: "Healthcheck URL to validate after deployment"
+        required: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke test /health
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.healthcheck_url }}" || true)
+          if [ "$code" != "200" ]; then
+            echo "Smoke test failed on /health with HTTP $code"
+            exit 1
+          fi
+          echo "Smoke test /health OK"
+
+      - name: Smoke test /api-docs
+        run: |
+          base="${{ secrets.healthcheck_url }}"
+          base="${base%/health}"
+          docs_url="${base}/api-docs"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$docs_url" || true)
+          if [ "$code" != "200" ] && [ "$code" != "301" ] && [ "$code" != "302" ]; then
+            echo "Smoke test failed on /api-docs with HTTP $code"
+            exit 1
+          fi
+          echo "Smoke test /api-docs OK"

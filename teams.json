@@ -1,0 +1,6 @@
+{
+  "team": "Reemark",
+  "repository": "Reemark/CI-CD",
+  "production_url": "https://ci-cd-425f.onrender.com",
+  "staging_url": "https://ci-cd-staging.onrender.com"
+}

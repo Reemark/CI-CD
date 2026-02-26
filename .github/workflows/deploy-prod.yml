@@ -129,9 +129,16 @@ jobs:
           echo "Staging health check failed"
           exit 1
 
+  smoke-staging:
+    name: Smoke tests post-deploy (staging)
+    needs: deploy-staging
+    uses: ./.github/workflows/reusable-smoke.yml
+    secrets:
+      healthcheck_url: ${{ secrets.STAGING_HEALTHCHECK_URL }}
+
   deploy-prod:
     runs-on: ubuntu-latest
-    needs: deploy-staging
+    needs: smoke-staging
     environment: production
     env:
       DEPLOY_HOOK_URL: ${{ secrets.PROD_DEPLOY_HOOK_URL }}
@@ -167,4 +174,34 @@ jobs:
             sleep 15
           done
           echo "Prod health check failed"
+          exit 1
+
+  smoke-prod:
+    name: Smoke tests post-deploy (production)
+    needs: deploy-prod
+    uses: ./.github/workflows/reusable-smoke.yml
+    secrets:
+      healthcheck_url: ${{ secrets.PROD_HEALTHCHECK_URL }}
+
+  rollback-strategy:
+    name: Rollback strategy
+    runs-on: ubuntu-latest
+    if: ${{ always() && (needs.deploy-prod.result == 'failure' || needs.smoke-prod.result == 'failure') }}
+    needs: [deploy-prod, smoke-prod]
+    env:
+      ROLLBACK_HOOK_URL: ${{ secrets.PROD_ROLLBACK_HOOK_URL }}
+
+    steps:
+      - name: Trigger production rollback hook
+        run: |
+          if [ -z "$ROLLBACK_HOOK_URL" ]; then
+            echo "No rollback hook configured; cannot execute rollback."
+            exit 1
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" --location --request POST "$ROLLBACK_HOOK_URL" || true)
+          if [ "$code" = "200" ] || [ "$code" = "201" ] || [ "$code" = "202" ] || [ "$code" = "204" ]; then
+            echo "Rollback strategy executed (HTTP $code)"
+            exit 0
+          fi
+          echo "Rollback hook failed with HTTP $code"
           exit 1
