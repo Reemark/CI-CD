@@ -31,3 +31,39 @@ jobs:
             exit 1
           fi
           echo "Smoke test /api-docs OK"
+
+      - name: Smoke test GET /todos
+        run: |
+          base="${{ secrets.healthcheck_url }}"
+          base="${base%/health}"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$base/todos" || true)
+          if [ "$code" != "200" ]; then
+            echo "Smoke test failed on GET /todos with HTTP $code"
+            exit 1
+          fi
+          echo "Smoke test GET /todos OK"
+
+      - name: Smoke test POST /todos
+        run: |
+          base="${{ secrets.healthcheck_url }}"
+          base="${base%/health}"
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "$base/todos" \
+            -H "Content-Type: application/json" \
+            -d '{"title":"smoke-test"}' || true)
+          if [ "$code" != "201" ]; then
+            echo "Smoke test failed on POST /todos with HTTP $code"
+            exit 1
+          fi
+          echo "Smoke test POST /todos OK"
+
+      - name: Smoke test GET /todos/:id (invalid)
+        run: |
+          base="${{ secrets.healthcheck_url }}"
+          base="${base%/health}"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$base/todos/999999" || true)
+          if [ "$code" != "404" ]; then
+            echo "Smoke test failed on GET /todos/999999, expected 404 got HTTP $code"
+            exit 1
+          fi
+          echo "Smoke test GET /todos/:id (unknown) OK"
