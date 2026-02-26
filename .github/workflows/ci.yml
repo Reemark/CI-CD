@@ -34,6 +34,29 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  api-contract:
+    name: API contract testing
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -48,8 +71,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Validate OpenAPI contract
+        run: npm run test:contract
 
   coverage:
     needs: tests
@@ -250,3 +273,34 @@ jobs:
           tags: |
             ghcr.io/${{ steps.image_meta.outputs.owner_lc }}/todo-api-node:latest
             ghcr.io/${{ steps.image_meta.outputs.owner_lc }}/todo-api-node:${{ github.sha }}
+
+  ci-notifications:
+    name: CI notifications (Discord/Slack)
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [lint, tests, coverage, performance, secret-scan, trivy-scan, sonarcloud, api-contract, docker]
+
+    steps:
+      - name: Notify Discord on CI failure
+        if: ${{ always() && (needs.lint.result == 'failure' || needs.tests.result == 'failure' || needs.coverage.result == 'failure' || needs.performance.result == 'failure' || needs['secret-scan'].result == 'failure' || needs['trivy-scan'].result == 'failure' || needs.sonarcloud.result == 'failure' || needs['api-contract'].result == 'failure' || needs.docker.result == 'failure') }}
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "Discord webhook not set, skipping notification."
+            exit 0
+          fi
+          payload="{\"content\":\"CI failed for ${GITHUB_REPOSITORY} on ${GITHUB_REF_NAME}. Check run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\"}"
+          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK_URL"
+
+      - name: Notify Slack on CI failure
+        if: ${{ always() && (needs.lint.result == 'failure' || needs.tests.result == 'failure' || needs.coverage.result == 'failure' || needs.performance.result == 'failure' || needs['secret-scan'].result == 'failure' || needs['trivy-scan'].result == 'failure' || needs.sonarcloud.result == 'failure' || needs['api-contract'].result == 'failure' || needs.docker.result == 'failure') }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Slack webhook not set, skipping notification."
+            exit 0
+          fi
+          payload="{\"text\":\"CI failed for ${GITHUB_REPOSITORY} on ${GITHUB_REF_NAME}. Check run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\"}"
+          curl -H "Content-Type: application/json" -X POST -d "$payload" "$SLACK_WEBHOOK_URL"
