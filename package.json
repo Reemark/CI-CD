@@ -7,7 +7,8 @@
     "lint": "eslint .",
     "start": "node app.js",
     "test": "jest --runInBand",
-    "test:coverage": "jest --coverage --runInBand"
+    "test:coverage": "jest --coverage --runInBand",
+    "test:perf": "node scripts/perf-check.js"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -15,6 +16,7 @@
       "!eslint.config.cjs",
       "!**/node_modules/**",
       "!**/coverage/**",
+      "!**/scripts/**",
       "!**/tests/**"
     ],
     "coverageThreshold": {
@@ -27,6 +29,7 @@
     }
   },
   "devDependencies": {
+    "autocannon": "^8.0.0",
     "eslint": "^10.0.2",
     "globals": "^15.15.0",
     "jest": "^29.0.0",

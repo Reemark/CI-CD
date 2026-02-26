@@ -1,5 +1,9 @@
 # Todo API
 
+[![CI](https://github.com/Reemark/CI-CD/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Reemark/CI-CD/actions/workflows/ci.yml)
+[![Docker](https://github.com/Reemark/CI-CD/actions/workflows/docker.yml/badge.svg?branch=main)](https://github.com/Reemark/CI-CD/actions/workflows/docker.yml)
+[![Deploy Prod](https://github.com/Reemark/CI-CD/actions/workflows/deploy-prod.yml/badge.svg?branch=main)](https://github.com/Reemark/CI-CD/actions/workflows/deploy-prod.yml)
+[![GHCR](https://img.shields.io/badge/GHCR-ci--cd-blue?logo=github)](https://github.com/orgs/Reemark/packages?repo_name=CI-CD)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Reemark_CI-CD&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Reemark_CI-CD)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Reemark_CI-CD&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Reemark_CI-CD)
 
@@ -38,7 +42,7 @@ GitHub Actions runs automatically on push and pull requests:
 ## deployment
 
 - `GET /health` returns HTTP `200` with `{ "status": "ok" }`
-- deployment workflow: `.github/workflows/deploy.yml`
+- deployment workflows: `.github/workflows/deploy-staging.yml` and `.github/workflows/deploy-prod.yml`
 - automatic deployment is triggered on every push to `main`
 
 Set these GitHub repository secrets to enable deployment:
