@@ -1,10 +1,19 @@
 const express = require("express");
+const Sentry = require("@sentry/node");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const todoRouter = require("./routes/todo");
 
 const app = express();
 app.use(express.json());
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE || "0.1"),
+    environment: process.env.NODE_ENV || "development",
+  });
+}
 
 // Configuration Swagger
 const swaggerOptions = {
@@ -32,6 +41,17 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/todos", todoRouter);
+
+app.use((err, _req, res, _next) => {
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err);
+  }
+  console.error(err);
+  if (res.headersSent) {
+    return;
+  }
+  res.status(500).json({ error: "Internal Server Error" });
+});
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;

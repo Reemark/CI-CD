@@ -42,6 +42,7 @@ GitHub Actions runs automatically on push and pull requests:
 - vulnerability scanning with Trivy (HIGH/CRITICAL)
 - code quality analysis with SonarCloud
 - CI notifications on failure (Discord/Slack webhooks)
+- observability / telemetry with Sentry (`SENTRY_DSN`)
 
 ## deployment
 
@@ -65,3 +66,12 @@ Add these in GitHub repository settings:
 - Variable: `SONAR_PROJECT_KEY`
 
 Without these values, the SonarCloud job is skipped automatically.
+
+## observability (sentry)
+
+Set these variables in your runtime environment:
+
+- `SENTRY_DSN`
+- `SENTRY_TRACES_SAMPLE_RATE` (example: `0.1`)
+
+When configured, runtime errors are sent to Sentry.
