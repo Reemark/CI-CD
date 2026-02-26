@@ -133,7 +133,7 @@ jobs:
     name: Smoke tests post-deploy (staging)
     needs: deploy-staging
     uses: ./.github/workflows/reusable-smoke.yml
-    with:
+    secrets:
       healthcheck_url: ${{ secrets.STAGING_HEALTHCHECK_URL }}
 
   deploy-prod:
@@ -180,7 +180,7 @@ jobs:
     name: Smoke tests post-deploy (production)
     needs: deploy-prod
     uses: ./.github/workflows/reusable-smoke.yml
-    with:
+    secrets:
       healthcheck_url: ${{ secrets.PROD_HEALTHCHECK_URL }}
 
   rollback-strategy:
