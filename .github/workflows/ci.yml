@@ -229,6 +229,8 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.tests=tests
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -278,7 +280,18 @@ jobs:
     name: CI notifications (Discord/Slack)
     runs-on: ubuntu-latest
     if: always()
-    needs: [lint, tests, coverage, perf, secret-scan, trivy-scan, sonarcloud, api-contract, docker]
+    needs:
+      [
+        lint,
+        tests,
+        coverage,
+        perf,
+        secret-scan,
+        trivy-scan,
+        sonarcloud,
+        api-contract,
+        docker,
+      ]
 
     steps:
       - name: Notify Discord on CI failure
