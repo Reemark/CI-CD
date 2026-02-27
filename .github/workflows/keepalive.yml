@@ -1,0 +1,50 @@
+name: Keepalive Environments
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Ping staging health endpoint
+        env:
+          STAGING_HEALTHCHECK_URL: ${{ secrets.STAGING_HEALTHCHECK_URL }}
+        run: |
+          if [ -z "$STAGING_HEALTHCHECK_URL" ]; then
+            echo "Missing STAGING_HEALTHCHECK_URL, skipping."
+            exit 0
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 3 \
+            "$STAGING_HEALTHCHECK_URL" || true)
+          echo "Staging healthcheck HTTP $code"
+
+  ping-production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Ping production health endpoint
+        env:
+          PROD_HEALTHCHECK_URL: ${{ secrets.PROD_HEALTHCHECK_URL }}
+        run: |
+          if [ -z "$PROD_HEALTHCHECK_URL" ]; then
+            echo "Missing PROD_HEALTHCHECK_URL, skipping."
+            exit 0
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 3 \
+            "$PROD_HEALTHCHECK_URL" || true)
+          echo "Production healthcheck HTTP $code"

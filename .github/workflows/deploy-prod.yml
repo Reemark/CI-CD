@@ -171,7 +171,13 @@ jobs:
       - name: Trigger staging deployment (with retries)
         run: |
           for i in {1..5}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --location --request POST "$DEPLOY_HOOK_URL" || true)
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              --location \
+              --connect-timeout 10 \
+              --max-time 30 \
+              --retry 2 \
+              --retry-delay 3 \
+              --request POST "$DEPLOY_HOOK_URL" || true)
             if [ "$code" = "200" ] || [ "$code" = "201" ] || [ "$code" = "202" ] || [ "$code" = "204" ]; then
               echo "Staging deploy hook accepted (HTTP $code)"
               exit 0
@@ -185,7 +191,12 @@ jobs:
       - name: Wait for staging /health endpoint to return 200
         run: |
           for i in {1..20}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$APP_HEALTHCHECK_URL" || true)
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              --connect-timeout 10 \
+              --max-time 30 \
+              --retry 2 \
+              --retry-delay 3 \
+              "$APP_HEALTHCHECK_URL" || true)
             if [ "$code" = "200" ]; then
               echo "Staging health check OK"
               exit 0
@@ -226,13 +237,22 @@ jobs:
       - name: Trigger prod deployment
         run: |
           curl --fail --silent --show-error --location \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 3 \
             --request POST \
             "$DEPLOY_HOOK_URL"
 
       - name: Wait for prod /health endpoint to return 200
         run: |
           for i in {1..20}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$APP_HEALTHCHECK_URL" || true)
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              --connect-timeout 10 \
+              --max-time 30 \
+              --retry 2 \
+              --retry-delay 3 \
+              "$APP_HEALTHCHECK_URL" || true)
             if [ "$code" = "200" ]; then
               echo "Prod health check OK"
               exit 0
@@ -265,7 +285,13 @@ jobs:
             echo "No rollback hook configured; cannot execute rollback."
             exit 1
           fi
-          code=$(curl -s -o /dev/null -w "%{http_code}" --location --request POST "$ROLLBACK_HOOK_URL" || true)
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            --location \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 2 \
+            --retry-delay 3 \
+            --request POST "$ROLLBACK_HOOK_URL" || true)
           if [ "$code" = "200" ] || [ "$code" = "201" ] || [ "$code" = "202" ] || [ "$code" = "204" ]; then
             echo "Rollback strategy executed (HTTP $code)"
             exit 0
