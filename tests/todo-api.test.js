@@ -44,6 +44,15 @@ describe("Todo API", () => {
     expect(response.body).toEqual({ status: "ok" });
   });
 
+  test("GET /openapi.json returns a valid OpenAPI spec", async () => {
+    const response = await request(app).get("/openapi.json");
+
+    expect(response.status).toBe(200);
+    expect(response.body.openapi).toBe("3.0.0");
+    expect(response.body.paths).toHaveProperty("/todos");
+    expect(response.body.paths).toHaveProperty("/todos/{id}");
+  });
+
   test("POST /todos returns 422 if title is missing", async () => {
     const response = await request(app).post("/todos").send({ description: "x" });
 
