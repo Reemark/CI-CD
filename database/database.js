@@ -1,6 +1,7 @@
 const initSqlJs = require("sql.js");
 const fs = require("fs");
 const path = require("path");
+const logger = require("../logger");
 
 const DEFAULT_DB_PATH = path.join(__dirname, "..", "todo.db");
 
@@ -12,7 +13,7 @@ function getDbPath() {
 
 async function getDb() {
   if (db) return db;
-  console.log("initializing database connection");
+  logger.info("Initializing database connection");
   const SQL = await initSqlJs();
   const dbPath = getDbPath();
 
@@ -35,7 +36,7 @@ async function getDb() {
 
 function saveDb() {
   if (db) {
-    console.log("saving database to disk");
+    logger.info({ dbPath: getDbPath() }, "Saving database to disk");
     const dbPath = getDbPath();
     const data = db.export();
     fs.writeFileSync(dbPath, Buffer.from(data));

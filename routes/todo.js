@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const { z } = require("zod");
 const { getDb, saveDb } = require("../database/database");
+const logger = require("../logger");
 
 const router = Router();
 
@@ -73,7 +74,7 @@ router.post("/", async (req, res) => {
   if (!result.success) return res.status(422).json({ detail: getValidationErrorDetail(result) });
 
   const { title, description = null, status = "pending" } = result.data;
-  console.log("creating todo: " + title);
+  logger.info({ title }, "Creating todo");
   const db = await getDb();
   db.run("INSERT INTO todos (title, description, status) VALUES (?, ?, ?)", [title, description, status]);
   const id = db.exec("SELECT last_insert_rowid() as id")[0].values[0][0];
@@ -109,7 +110,7 @@ router.get("/", async (req, res) => {
   const db = await getDb();
   const rows = db.exec("SELECT * FROM todos LIMIT ? OFFSET ?", [limit, skip]);
   const todos = toArray(rows);
-  console.log("found " + todos.length + " todos");
+  logger.info({ count: todos.length, skip, limit }, "Fetched todos");
   res.json(todos);
 });
 

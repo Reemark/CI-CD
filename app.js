@@ -3,6 +3,7 @@ const Sentry = require("@sentry/node");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const path = require("path");
+const logger = require("./logger");
 const todoRouter = require("./routes/todo");
 
 const app = express();
@@ -38,7 +39,7 @@ app.get("/openapi.json", (_req, res) => res.status(200).json(swaggerSpec));
 app.get("/swagger.json", (_req, res) => res.status(200).json(swaggerSpec));
 
 app.get("/", (_req, res) => {
-  console.log("someone hit the root endpoint");
+  logger.info({ route: "/" }, "Root endpoint hit");
   res.json({ message: "Welcome to the Enhanced Express Todo App!" });
 });
 
@@ -52,7 +53,7 @@ app.use((err, _req, res, _next) => {
   if (process.env.SENTRY_DSN) {
     Sentry.captureException(err);
   }
-  console.error(err);
+  logger.error({ err }, "Unhandled application error");
   if (res.headersSent) {
     return;
   }
@@ -61,7 +62,7 @@ app.use((err, _req, res, _next) => {
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  app.listen(PORT, () => logger.info({ port: Number(PORT) }, "Server started"));
 }
 
 module.exports = app;
