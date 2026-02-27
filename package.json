@@ -47,6 +47,16 @@
     "zod": "^4.3.6"
   },
   "overrides": {
-    "validator": ">=13.15.22"
+    "validator": ">=13.15.22",
+    "minimatch": "10.2.3",
+    "glob": {
+      "minimatch": "3.1.4"
+    },
+    "test-exclude": {
+      "minimatch": "3.1.4"
+    },
+    "swagger-jsdoc": {
+      "minimatch": "3.1.4"
+    }
   }
 }
