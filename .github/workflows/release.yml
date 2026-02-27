@@ -11,6 +11,33 @@ permissions:
   packages: read
 
 jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -89,7 +116,11 @@ jobs:
 
   release-please:
     runs-on: ubuntu-latest
+<<<<<<< HEAD
     needs: [lint, tests, api-contract, docker-build, perf]
+=======
+    needs: [lint, tests, api-contract, docker-build, perf, secret-scan, trivy-scan]
+>>>>>>> 26916ca5dd3d4970b643bf7249dd546b9ad246ba
     permissions:
       contents: write
       pull-requests: write
