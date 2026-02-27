@@ -2,6 +2,7 @@ const express = require("express");
 const Sentry = require("@sentry/node");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const path = require("path");
 const todoRouter = require("./routes/todo");
 
 const app = express();
@@ -25,11 +26,16 @@ const swaggerOptions = {
       description: "API de gestion de todos",
     },
   },
-  apis: ["./routes/*.js"], // Swagger va lire les commentaires dans les fichiers de routes
+  // Use an absolute path so OpenAPI generation works regardless of process.cwd().
+  apis: [path.join(__dirname, "routes", "*.js")],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/docs", (_req, res) => res.redirect(302, "/api-docs"));
+app.get("/swagger", (_req, res) => res.redirect(302, "/api-docs"));
+app.get("/openapi.json", (_req, res) => res.status(200).json(swaggerSpec));
+app.get("/swagger.json", (_req, res) => res.status(200).json(swaggerSpec));
 
 app.get("/", (_req, res) => {
   console.log("someone hit the root endpoint");
