@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/Reemark/CI-CD/compare/v1.0.0...v1.0.1) (2026-02-27)
+
+
+### Bug Fixes
+
+* **deps:** patch minimatch vulnerabilities for trivy ([#64](https://github.com/Reemark/CI-CD/issues/64)) ([2e166da](https://github.com/Reemark/CI-CD/commit/2e166daa57c804325a7b7a4785307455f40bf130))
+
 ## 1.0.0 (2026-02-24)
 
 
